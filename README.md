@@ -1,3 +1,5 @@
+## COP4600 Operating Systems Project 2 ##
+
 The project requirements are described in p2-memsim.pdf. Use memory traces that are stored in two files:
 
 bzip.trace.zip and sixpack.trace.zip. You are to implement a page replacement algorithm presented in this paper.
