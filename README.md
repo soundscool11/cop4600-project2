@@ -4,7 +4,7 @@ Files necessary to compile the program:
 - main.cpp : main interface of the simulator, it takes user input in two forms
 - FIFOCache.cpp : file that implements first-in first-out replacement policy
 - LRUCache.cpp : file that implements least recently used policy
-- SegmentedFIFOCache.cpp : file that implements segmented-fifo polciy
+- SegmentedFIFOCache.cpp : file that implements segmented-fifo policy
 
 To compile the program:
 1. You can use command "make" and it will compile all the files for you which creates memsim executable.
