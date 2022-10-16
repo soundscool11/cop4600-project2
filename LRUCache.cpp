@@ -22,6 +22,7 @@ class LRUCache {
 			capacity = n;
 			debug = debugMode;
 			reads = n;
+			faults = n;
 		}
 
 		int getEvents() {return events;}

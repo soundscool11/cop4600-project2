@@ -29,6 +29,7 @@ class FIFOCache {
         int getHits() {return hits;}
 
         void update(unsigned int targetPage, char rw, int dirtyBit) {
+            events++;
             int pageExists = 0;
             for(int i = 0; i < pageTable.size(); i++) {
                 if(pageTable[i].first == targetPage) {
@@ -58,7 +59,7 @@ class FIFOCache {
 
                 if(rw == 'W') { 
                     dirtyBit = 1; // replace the "R" with "W"
-                    if(debug) printf("Dirty bit: 0 -> 1 / ", targetPage);
+                    //if(debug) printf("Dirty bit: 0 -> 1 / ", targetPage);
                 }
 
                 pageTable.push_back(make_pair(targetPage, dirtyBit));
