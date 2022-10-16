@@ -5,6 +5,8 @@
 #include <fstream>
 #include <deque>
 
+#include "LRUCache.cpp"
+
 using namespace std;
 
 int totalEvents = 0;
@@ -100,14 +102,46 @@ void fifo(FILE *tFile, int nframes, bool debugMode) {
     if(debugMode) {
         printf("\ntotal page hit: %d\n", pageHit);
         printf("total page fault: %d\n\n", pageFault);
-    }
-}
 
+    }    
+}
 
 void lru(FILE *tFile, int nframes, bool debugMode) {
 
-}
+	LRUCache cache(nframes, debugMode);
 
+	unsigned int address;
+	char rw;
+
+	while(!feof(tFile)) {
+
+		fscanf(tFile, "%x %c\n", &address, &rw);
+
+        address = address >> 12;
+
+		int writeBit = (rw == 'W');
+
+		if (debugMode) printf("Page: %d, bit: %d\n", address, writeBit);
+
+		cache.update(address, writeBit);
+		
+	}
+
+	fclose(tFile);
+
+	totalEvents = cache.getEvents();
+	totalRead = cache.getReads();
+	totalWrite = cache.getWrites();
+	pageFault = cache.getFaults();
+	pageHit = cache.getHits();
+
+	if(debugMode) {
+        printf("\ntotal page hit: %d\n", pageHit);
+        printf("total page fault: %d\n\n", pageFault);
+    }   
+
+	
+}
 
 void segmentedFifo(FILE *tFile, int nframes, float p, bool debugMode) {
   
@@ -155,6 +189,11 @@ int main(int argc, char** argv) {
         perror("Please enter <lru|fifo|vms> correctly.\n");
         exit(0);
     }
+    
+    printf("total memory frames: %d\n", nframes);
+    printf("events in trace: %d\n", totalEvents);
+    printf("total disk reads: %d\n", totalRead);
+    printf("total disk writes: %d\n", totalWrite);
 
     printf("total memory frames: %d\n", nframes);
     printf("events in trace: %d\n", totalEvents);
