@@ -5,6 +5,8 @@
 #include <fstream>
 #include <deque>
 
+# include "LRUCache.cpp"
+
 using namespace std;
 
 int totalEvents = 0;
@@ -92,6 +94,39 @@ void fifo(FILE *tFile, int nframes, bool debugMode) {
 
 void lru(FILE *tFile, int nframes, bool debugMode) {
 
+	LRUCache cache(nframes, debugMode);
+
+	unsigned int address;
+	char rw;
+
+	while(!feof(tFile)) {
+
+		fscanf(tFile, "%x %c\n", &address, &rw);
+
+        address = address >> 12;
+
+		int writeBit = (rw == 'W');
+
+		if (debugMode) printf("Page: %d, bit: %d\n", address, writeBit);
+
+		cache.update(address, writeBit);
+		
+	}
+
+	fclose(tFile);
+
+	totalEvents = cache.getEvents();
+	totalRead = cache.getReads();
+	totalWrite = cache.getWrites();
+	pageFault = cache.getFaults();
+	pageHit = cache.getHits();
+
+	if(debugMode) {
+        printf("\ntotal page hit: %d\n", pageHit);
+        printf("total page fault: %d\n\n", pageFault);
+    }   
+
+	
 }
 
 
