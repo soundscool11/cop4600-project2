@@ -68,7 +68,7 @@ void lru(FILE *tFile, int nframes, bool debugMode) {
 
 		int writeBit = (rw == 'W');
 
-		// if (debugMode) printf("Page: %d, bit: %d\n", address, writeBit);
+		if (debugMode) printf("Page: %d, bit: %d\n", address, writeBit);
 
 		cache.update(address, writeBit);
 		

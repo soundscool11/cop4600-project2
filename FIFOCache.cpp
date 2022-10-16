@@ -32,6 +32,8 @@ class FIFOCache {
             events++;
             int pageExists = 0;
             for(int i = 0; i < pageTable.size(); i++) {
+                // case 1: page is in the FIFO page table (when page hit occurs)
+                // solution: update write (dirty bit 0 -> 1) if "W" encountered
                 if(pageTable[i].first == targetPage) {
                     pageExists = 1;
                     hits++;
