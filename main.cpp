@@ -32,7 +32,7 @@ void fifo(FILE *tFile, int nframes, bool debugMode) {
         int pageNum = int(addr); // convert hex into int 
 
         // case 1: page is in the FIFO page table (when page hit occurs)
-        // solution: update write (dirty bit = 1) if "W" encountered
+        // solution: update write (dirty bit 0 -> 1) if "W" encountered
         int pageExists = 0;
         for(int i = 0; i < pageTable.size(); i++) {
             if(pageTable[i].first == pageNum) {
@@ -58,6 +58,8 @@ void fifo(FILE *tFile, int nframes, bool debugMode) {
             totalRead++;
             pageFault++;
 
+            if(debugMode) printf("Event time: %d, Page Number: %d - ", totalEvents, pageNum);
+
             if(rw == 'W') { 
                 dirtyBit = 1; // replace the "R" with "W"
                 if(debugMode) printf("Dirty bit: 0 -> 1 / ", pageNum);
@@ -65,10 +67,7 @@ void fifo(FILE *tFile, int nframes, bool debugMode) {
 
             pageTable.push_back(make_pair(pageNum, dirtyBit));
 
-            if(debugMode) {
-                printf("Event time: %d, Page Number: %d - ", totalEvents, pageNum);
-                printf("Push\n");
-            }
+            if(debugMode) printf("Push\n");
         }
 
         // case 3: page is not in page table and page table is full (when page fault occurs) 
@@ -87,7 +86,7 @@ void fifo(FILE *tFile, int nframes, bool debugMode) {
             if(pageTable.front().second == 1) {
                 // if "W", then increase write count
                 totalWrite++;
-                if(debugMode) printf("Frame with Write saved to disk. / ");
+                if(debugMode) printf("Frame with W saved to disk / ");
             }
 
             pageTable.pop_front();
@@ -96,15 +95,14 @@ void fifo(FILE *tFile, int nframes, bool debugMode) {
             if(debugMode) printf("Page fault time: %d\n", pageFault);
         }
     }
-
     fclose(tFile);
 
     if(debugMode) {
         printf("\ntotal page hit: %d\n", pageHit);
         printf("total page fault: %d\n\n", pageFault);
-
-    }    
+    }
 }
+
 
 void lru(FILE *tFile, int nframes, bool debugMode) {
 
@@ -139,8 +137,6 @@ void lru(FILE *tFile, int nframes, bool debugMode) {
         printf("\ntotal page hit: %d\n", pageHit);
         printf("total page fault: %d\n\n", pageFault);
     }   
-
-	
 }
 
 void segmentedFifo(FILE *tFile, int nframes, float p, bool debugMode) {
@@ -151,7 +147,7 @@ void segmentedFifo(FILE *tFile, int nframes, float p, bool debugMode) {
 int main(int argc, char** argv) {
     if(argc != 5 && argc != 6) {
         perror("Please enter the following arguments.\n");
-        perror("./memsim <tracefile> <nframes> <lru|fifo|vms> (<p> if vms) <debug|quite>");
+        perror("memsim <tracefile> <nframes> <lru|fifo|vms> (<p> if vms) <debug|quite>");
         exit(0);
     }
 
@@ -190,11 +186,6 @@ int main(int argc, char** argv) {
         exit(0);
     }
     
-    printf("total memory frames: %d\n", nframes);
-    printf("events in trace: %d\n", totalEvents);
-    printf("total disk reads: %d\n", totalRead);
-    printf("total disk writes: %d\n", totalWrite);
-
     printf("total memory frames: %d\n", nframes);
     printf("events in trace: %d\n", totalEvents);
     printf("total disk reads: %d\n", totalRead);
