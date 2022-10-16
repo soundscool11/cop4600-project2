@@ -8,7 +8,7 @@
 using namespace std;
 
 
-void fifo(string tracefile, int nframes, bool debugMode) {
+void fifo(FILE *tFile, int nframes, bool debugMode) {
     int totalEvents = 0;
     int pageFault = 0;
     int pageHit = 0;
@@ -16,15 +16,6 @@ void fifo(string tracefile, int nframes, bool debugMode) {
     int totalWrite = 0;
 
     deque<pair<int, int>> pageTable; // <page number, dirty bit>
-
-    // read trace file
-    const char* traceFile = tracefile.c_str();
-    FILE *tFile = fopen(traceFile, "r");
-
-    if(tFile == NULL) {
-        perror("File is empty. Please try again.\n");
-        exit(0);
-    }
 
     // track each line of the file and do page replacement process if necessary
     unsigned addr;
@@ -102,13 +93,12 @@ void fifo(string tracefile, int nframes, bool debugMode) {
     printf("total page fault: %d\n", pageFault);
 }
 
-
-void lru(string tracefile, int nframes, bool debugMode) {
+void lru(FILE *tFile, int nframes, bool debugMode) {
 
 }
 
 
-void segmentedFifo(string tracefile, int nframes, float p, bool debugMode) {
+void segmentedFifo(FILE *tFile, int nframes, float p, bool debugMode) {
   
 }
 
@@ -125,6 +115,14 @@ int main(int argc, char** argv) {
     string selectedAlgo = argv[3];
     string outputFormat = argv[argc-1];
 
+    const char* traceFile = tracefile.c_str();
+    FILE *tFile = fopen(traceFile, "r");
+
+    if(tFile == NULL) {
+        perror("File is empty. Please try again.\n");
+        exit(0);
+    }
+
     bool debugMode;
     if(outputFormat == "debug") {
         debugMode = true;
@@ -136,12 +134,12 @@ int main(int argc, char** argv) {
     }
 
     if(selectedAlgo == "lru") {
-        lru(tracefile, nframes, debugMode);
+        lru(tFile, nframes, debugMode);
     } else if(selectedAlgo == "fifo") {
-        fifo(tracefile, nframes, debugMode);
+        fifo(tFile, nframes, debugMode);
     } else if(selectedAlgo == "vms") {
         int p = stoi(argv[4]);
-        segmentedFifo(tracefile, nframes, p, debugMode);
+        segmentedFifo(tFile, nframes, p, debugMode);
     } else {
         perror("Please enter <lru|fifo|vms> correctly.\n");
         exit(0);
