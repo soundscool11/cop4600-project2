@@ -1,3 +1,4 @@
-all:
-	g++ -Wall -std=c++17  main.cpp -o memsim
-complie:
+CC=g++
+
+memsim: main.cpp LRUCache.cpp FIFOCache.cpp
+	$(CC) -o memsim main.cpp LRUCache.cpp FIFOCache.cpp
