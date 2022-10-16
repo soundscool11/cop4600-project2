@@ -7,24 +7,15 @@
 
 using namespace std;
 
+int totalEvents = 0;
+int totalRead = 0;
+int totalWrite = 0;
+int pageFault = 0;
+int pageHit = 0;
 
-void fifo(string tracefile, int nframes, bool debugMode) {
-    int totalEvents = 0;
-    int pageFault = 0;
-    int pageHit = 0;
-    int totalRead = 0;
-    int totalWrite = 0;
 
+void fifo(FILE *tFile, int nframes, bool debugMode) {
     deque<pair<int, int>> pageTable; // <page number, dirty bit>
-
-    // read trace file
-    const char* traceFile = tracefile.c_str();
-    FILE *tFile = fopen(traceFile, "r");
-
-    if(tFile == NULL) {
-        perror("File is empty. Please try again.\n");
-        exit(0);
-    }
 
     // track each line of the file and do page replacement process if necessary
     unsigned addr;
@@ -40,20 +31,20 @@ void fifo(string tracefile, int nframes, bool debugMode) {
 
         // case 1: page is in the FIFO page table (when page hit occurs)
         // solution: update write (dirty bit = 1) if "W" encountered
-        int pageExist = 0;
-        for(int i = 0; i <= pageTable.size(); i++) {
+        int pageExists = 0;
+        for(int i = 0; i < pageTable.size(); i++) {
             if(pageTable[i].first == pageNum) {
-                pageExist = 1;
+                pageExists = 1;
                 pageHit++;
 
-                if(debugMode) printf("Case 1) Event time: %d, Page Number: %d, Page hit time: %d - ", totalEvents, pageNum, pageHit);
+                if(debugMode) printf("Event time: %d, Page Number: %d - ", totalEvents, pageNum);
 
                 if(rw == 'W') { 
                     pageTable[i].second = 1; // replace the "R" with "W"
-                    if(debugMode) printf("The dirty bit of page number %d has been changed to 1. / ", pageNum);
+                    if(debugMode) printf("Dirty bit: 0 -> 1 / ", pageNum);
                 }
 
-                if(debugMode) printf("The page number %d already in the page table.\n", pageNum);
+                if(debugMode) printf("Page hit time: %d", pageHit);
             
                 break;
             }
@@ -61,22 +52,35 @@ void fifo(string tracefile, int nframes, bool debugMode) {
 
         // case 2: page is not in page table and page table is not full
         // solution: push a new page at the end of page table
-        if(pageExist == 0 && pageTable.size() != nframes) {
+        if(pageExists == 0 && pageTable.size() != nframes) {
+            totalRead++;
+            pageFault++;
+
+            if(rw == 'W') { 
+                dirtyBit = 1; // replace the "R" with "W"
+                if(debugMode) printf("Dirty bit: 0 -> 1 / ", pageNum);
+            }
+
             pageTable.push_back(make_pair(pageNum, dirtyBit));
 
             if(debugMode) {
-                printf("Case 2) Event time: %d, Page Number: %d - ", totalEvents, pageNum);
-                printf("Page table is not full. A new page has been pushed.\n");
+                printf("Event time: %d, Page Number: %d - ", totalEvents, pageNum);
+                printf("Push\n");
             }
         }
 
         // case 3: page is not in page table and page table is full (when page fault occurs) 
         // solution: pop from the front and push the new page at the end of the page table
-        else if(pageExist == 0 && pageTable.size() == nframes) {
+        else if(pageExists == 0 && pageTable.size() == nframes) {
             pageFault++;
             totalRead++;
 
-            if(debugMode) printf("Case 3) Event time: %d, Page Number: %d, Page fault time: %d - ", totalEvents, pageNum, pageFault);
+            if(debugMode) printf("Event time: %d, Page Number: %d - ", totalEvents, pageNum);
+
+            if(rw == 'W') { 
+                dirtyBit = 1; // replace the "R" with "W"
+                if(debugMode) printf("Dirty bit: 0 -> 1 / ", pageNum);
+            }
 
             if(pageTable.front().second == 1) {
                 // if "W", then increase write count
@@ -87,28 +91,25 @@ void fifo(string tracefile, int nframes, bool debugMode) {
             pageTable.pop_front();
             pageTable.push_back(make_pair(pageNum, dirtyBit));
 
-            if(debugMode) printf("The first page is popped and the page number %d is pushed.\n", pageNum);
+            if(debugMode) printf("Page fault time: %d\n", pageFault);
         }
-        
     }
 
     fclose(tFile);
 
-    printf("total memory frames: %d\n", nframes);
-    printf("events in trace: %d\n", totalEvents);
-    printf("total disk reads: %d\n", totalRead);
-    printf("total disk writes: %d\n", totalWrite);
-    printf("total page hit: %d\n", pageHit);
-    printf("total page fault: %d\n", pageFault);
+    if(debugMode) {
+        printf("\ntotal page hit: %d\n", pageHit);
+        printf("total page fault: %d\n\n", pageFault);
+    }
 }
 
 
-void lru(string tracefile, int nframes, bool debugMode) {
+void lru(FILE *tFile, int nframes, bool debugMode) {
 
 }
 
 
-void segmentedFifo(string tracefile, int nframes, float p, bool debugMode) {
+void segmentedFifo(FILE *tFile, int nframes, float p, bool debugMode) {
   
 }
 
@@ -125,6 +126,14 @@ int main(int argc, char** argv) {
     string selectedAlgo = argv[3];
     string outputFormat = argv[argc-1];
 
+    const char* traceFile = tracefile.c_str();
+    FILE *tFile = fopen(traceFile, "r");
+
+    if(tFile == NULL) {
+        perror("File is empty. Please try again.\n");
+        exit(0);
+    }
+
     bool debugMode;
     if(outputFormat == "debug") {
         debugMode = true;
@@ -136,16 +145,21 @@ int main(int argc, char** argv) {
     }
 
     if(selectedAlgo == "lru") {
-        lru(tracefile, nframes, debugMode);
+        lru(tFile, nframes, debugMode);
     } else if(selectedAlgo == "fifo") {
-        fifo(tracefile, nframes, debugMode);
+        fifo(tFile, nframes, debugMode);
     } else if(selectedAlgo == "vms") {
         int p = stoi(argv[4]);
-        segmentedFifo(tracefile, nframes, p, debugMode);
+        segmentedFifo(tFile, nframes, p, debugMode);
     } else {
         perror("Please enter <lru|fifo|vms> correctly.\n");
         exit(0);
     }
+
+    printf("total memory frames: %d\n", nframes);
+    printf("events in trace: %d\n", totalEvents);
+    printf("total disk reads: %d\n", totalRead);
+    printf("total disk writes: %d\n", totalWrite);
 
     return 0;
 }
