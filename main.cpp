@@ -5,6 +5,7 @@
 #include <fstream>
 #include <deque>
 
+#include "FIFOCache.cpp"
 #include "LRUCache.cpp"
 
 using namespace std;
@@ -17,7 +18,7 @@ int pageHit = 0;
 
 
 void fifo(FILE *tFile, int nframes, bool debugMode) {
-    deque<pair<int, int>> pageTable; // <page number, dirty bit>
+    FIFOCache cache(nframes, debugMode);
 
     // track each line of the file and do page replacement process if necessary
     unsigned addr;
@@ -25,77 +26,22 @@ void fifo(FILE *tFile, int nframes, bool debugMode) {
 
     while(!feof(tFile)) {
         fscanf(tFile, "%x %c\n", &addr, &rw);
-        totalEvents++;
 
-        int dirtyBit = 0; // unmodified(or read) = 0, modified = 1
         addr = addr >> 12; // since page size is 4KB == 2^12 bits == 4096 bits
         int pageNum = int(addr); // convert hex into int 
 
-        // case 1: page is in the FIFO page table (when page hit occurs)
-        // solution: update write (dirty bit 0 -> 1) if "W" encountered
-        int pageExists = 0;
-        for(int i = 0; i < pageTable.size(); i++) {
-            if(pageTable[i].first == pageNum) {
-                pageExists = 1;
-                pageHit++;
+        int dirtyBit = 0; // unmodified(or read) = 0, modified = 1
 
-                if(debugMode) printf("Event time: %d, Page Number: %d - ", totalEvents, pageNum);
-
-                if(rw == 'W') { 
-                    pageTable[i].second = 1; // replace the "R" with "W"
-                    if(debugMode) printf("Dirty bit: 0 -> 1 / ", pageNum);
-                }
-
-                if(debugMode) printf("Page hit time: %d", pageHit);
-            
-                break;
-            }
-        }
-
-        // case 2: page is not in page table and page table is not full
-        // solution: push a new page at the end of page table
-        if(pageExists == 0 && pageTable.size() != nframes) {
-            totalRead++;
-            pageFault++;
-
-            if(debugMode) printf("Event time: %d, Page Number: %d - ", totalEvents, pageNum);
-
-            if(rw == 'W') { 
-                dirtyBit = 1; // replace the "R" with "W"
-                if(debugMode) printf("Dirty bit: 0 -> 1 / ", pageNum);
-            }
-
-            pageTable.push_back(make_pair(pageNum, dirtyBit));
-
-            if(debugMode) printf("Push\n");
-        }
-
-        // case 3: page is not in page table and page table is full (when page fault occurs) 
-        // solution: pop from the front and push the new page at the end of the page table
-        else if(pageExists == 0 && pageTable.size() == nframes) {
-            pageFault++;
-            totalRead++;
-
-            if(debugMode) printf("Event time: %d, Page Number: %d - ", totalEvents, pageNum);
-
-            if(rw == 'W') { 
-                dirtyBit = 1; // replace the "R" with "W"
-                if(debugMode) printf("Dirty bit: 0 -> 1 / ", pageNum);
-            }
-
-            if(pageTable.front().second == 1) {
-                // if "W", then increase write count
-                totalWrite++;
-                if(debugMode) printf("Frame with W saved to disk / ");
-            }
-
-            pageTable.pop_front();
-            pageTable.push_back(make_pair(pageNum, dirtyBit));
-
-            if(debugMode) printf("Page fault time: %d\n", pageFault);
-        }
+        cache.update(addr, rw, dirtyBit);
     }
+
     fclose(tFile);
+
+    totalEvents = cache.getEvents();
+	totalRead = cache.getReads();
+	totalWrite = cache.getWrites();
+	pageFault = cache.getFaults();
+	pageHit = cache.getHits();
 
     if(debugMode) {
         printf("\ntotal page hit: %d\n", pageHit);
