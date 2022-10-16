@@ -7,14 +7,13 @@
 
 using namespace std;
 
+int totalEvents = 0;
+int totalRead = 0;
+int totalWrite = 0;
+int pageFault = 0;
+int pageHit = 0;
 
 void fifo(FILE *tFile, int nframes, bool debugMode) {
-    int totalEvents = 0;
-    int pageFault = 0;
-    int pageHit = 0;
-    int totalRead = 0;
-    int totalWrite = 0;
-
     deque<pair<int, int>> pageTable; // <page number, dirty bit>
 
     // track each line of the file and do page replacement process if necessary
@@ -85,12 +84,10 @@ void fifo(FILE *tFile, int nframes, bool debugMode) {
 
     fclose(tFile);
 
-    printf("total memory frames: %d\n", nframes);
-    printf("events in trace: %d\n", totalEvents);
-    printf("total disk reads: %d\n", totalRead);
-    printf("total disk writes: %d\n", totalWrite);
-    printf("total page hit: %d\n", pageHit);
-    printf("total page fault: %d\n", pageFault);
+    if(debugMode) {
+        printf("\ntotal page hit: %d\n", pageHit);
+        printf("total page fault: %d\n\n", pageFault);
+    }    
 }
 
 void lru(FILE *tFile, int nframes, bool debugMode) {
@@ -144,6 +141,11 @@ int main(int argc, char** argv) {
         perror("Please enter <lru|fifo|vms> correctly.\n");
         exit(0);
     }
+    
+    printf("total memory frames: %d\n", nframes);
+    printf("events in trace: %d\n", totalEvents);
+    printf("total disk reads: %d\n", totalRead);
+    printf("total disk writes: %d\n", totalWrite);
 
     return 0;
 }
