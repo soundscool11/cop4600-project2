@@ -7,6 +7,7 @@
 
 #include "FIFOCache.cpp"
 #include "LRUCache.cpp"
+#include "SegmentedFIFOCache.cpp"
 
 using namespace std;
 
@@ -25,9 +26,11 @@ void fifo(FILE *tFile, int nframes, bool debugMode) {
     char rw;
 
     while(!feof(tFile)) {
+
         fscanf(tFile, "%x %c\n", &addr, &rw);
 
         addr = addr >> 12; // since page size is 4KB == 2^12 bits == 4096 bits
+
         int pageNum = int(addr); // convert hex into int 
 
         int dirtyBit = 0; // unmodified(or read) = 0, modified = 1
@@ -85,8 +88,38 @@ void lru(FILE *tFile, int nframes, bool debugMode) {
     }   
 }
 
-void segmentedFifo(FILE *tFile, int nframes, float p, bool debugMode) {
-  
+void segmentedFifo(FILE *tFile, int nframes, int p, bool debugMode) {
+    // SegmentedFIFOCache cache(nframes, p, debugMode);
+
+	// unsigned int address;
+	// char rw;
+
+	// while(!feof(tFile)) {
+
+	// 	fscanf(tFile, "%x %c\n", &address, &rw);
+
+    //     address = address >> 12;
+
+	// 	int writeBit = (rw == 'W');
+
+	// 	if (debugMode) printf("Page: %d, bit: %d\n", address, writeBit);
+
+	// 	cache.update(address, writeBit);
+		
+	// }
+
+	// fclose(tFile);
+
+	// totalEvents = cache.getEvents();
+	// totalRead = cache.getReads();
+	// totalWrite = cache.getWrites();
+	// pageFault = cache.getFaults();
+	// pageHit = cache.getHits();
+
+	// if(debugMode) {
+    //     printf("\ntotal page hit: %d\n", pageHit);
+    //     printf("total page fault: %d\n\n", pageFault);
+    // }   
 }
 
 
