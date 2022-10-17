@@ -1,4 +1,4 @@
 CC=g++
 
-memsim: main.cpp LRUCache.cpp FIFOCache.cpp SegmentedFIFOCache.cpp
-	$(CC) -o memsim main.cpp LRUCache.cpp FIFOCache.cpp SegmentedFIFOCache.cpp
+memsim: main.cpp LRUCache.cpp FIFOCache.cpp 
+	$(CC) -std=c++11 -o memsim main.cpp LRUCache.cpp FIFOCache.cpp

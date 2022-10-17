@@ -69,7 +69,7 @@ class FIFOCache {
                 if(debug) printf("Push\n");
             }
 
-            // case 3: page is not in page table and page table is full (when page fault occurs) 
+            // case 3: page is not in page table and page table is full 
             // solution: pop from the front and push the new page at the end of the page table
             else if(pageExists == 0 && pageTable.size() == capacity) {
                 faults++;

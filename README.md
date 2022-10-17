@@ -4,7 +4,6 @@ Files necessary to compile the program:
 - main.cpp : main interface of the simulator, it takes user input in two forms
 - FIFOCache.cpp : file that implements first-in first-out replacement policy
 - LRUCache.cpp : file that implements least recently used policy
-- SegmentedFIFOCache.cpp : file that implements segmented-fifo polciy
 
 To compile the program:
 1. You can use command "make" and it will compile all the files for you which creates memsim executable.
@@ -12,10 +11,9 @@ To compile the program:
 
 To run the program: 
 The program can be run with two types of input format
-1. For fifo and lru use the following format:
+
+For fifo and lru use the following format:
 ./memsim tracefile nFrames policy quiet/debug
-2. For segmented fifo use the following format:
-./memsim tracefile nframes policy percentage quiet/debug
 
 
 __________Running Examples________________
@@ -26,35 +24,6 @@ events in trace: 1000000
 total disk reads: 1467
 total disk writes: 514
 
-./memsim bzip.trace 64 vms 0 quiet
-Memory Frames: 64
-Trace Count: 1000000
-Read Count: 1467
-Write Count: 514
-
-./memsim bzip.trace 64 vms 25 quiet
-Memory Frames: 64
-Trace Count: 1000000
-Read Count: 1367
-Write Count: 471
-
-./memsim bzip.trace 64 vms 50 quiet
-Memory Frames: 64
-Trace Count: 1000000
-Read Count: 1290
-Write Count: 427
-
-./memsim bzip.trace 64 vms 75 quiet
-Memory Frames: 64
-Trace Count: 1000000
-Read Count: 1267
-Write Count: 416
-
-./memsim bzip.trace 64 vms 100 quiet
-Memory Frames: 64
-Trace Count: 1000000
-Read Count: 1264
-Write Count: 420
 
 ./memsim bzip.trace 64 lru quiet
 total memory frames: 64

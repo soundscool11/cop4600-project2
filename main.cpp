@@ -7,7 +7,6 @@
 
 #include "FIFOCache.cpp"
 #include "LRUCache.cpp"
-#include "SegmentedFIFOCache.cpp"
 
 using namespace std;
 
